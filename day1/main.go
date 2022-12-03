@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -57,21 +58,36 @@ func elfsTotalCalories(elfFoodPacks map[string][]string) map[string]int {
 	return elfs
 }
 
-func elfMostCalories(elfCaloriesTotal map[string]int) map[string]int {
-	bossElf := ""
-	maxCalories := 0
-	for elf, calories := range elfCaloriesTotal {
-		if calories > maxCalories {
-			bossElf = elf
-			maxCalories = calories
-		}
+func elfsSortCalories(elfCaloriesTotal map[string]int) map[string]int {
+	keys := make([]string, 0, len(elfCaloriesTotal))
+
+	for key := range elfCaloriesTotal {
+		keys = append(keys, key)
 	}
 
-	elf := make(map[string]int)
-	elf[bossElf] = maxCalories
-	return elf
+	sort.Slice(keys, func(i, j int) bool {
+		return elfCaloriesTotal[keys[i]] > elfCaloriesTotal[keys[j]]
+	})
+
+	bossElfs := make(map[string]int)
+	iter := 0
+	for _, key := range keys {
+		if iter < 3 {
+			bossElfs[key] = elfCaloriesTotal[key]
+		}
+		iter++
+	}
+
+	total := 0
+	for _, value := range bossElfs {
+		total = total + value
+	}
+	bossElfs["total"] = total
+
+	return bossElfs
 }
 
 func main() {
-	fmt.Println(elfMostCalories(elfsTotalCalories(readFile("input.txt"))))
+	// prints out a map[string]int with the top three elfs, as well as the total value of calories those elfs have
+	fmt.Println(elfsSortCalories(elfsTotalCalories(readFile("input.txt"))))
 }
