@@ -32,6 +32,7 @@ func removeIndex[T any](slice []T, i int) []T {
 	return append(slice[:i], slice[i+1:]...)
 }
 
+// apend first item in each slice in map to a string
 func mapSlice0thItem(input map[int][]string) string {
 	var keys []int
 	var r string
@@ -95,7 +96,7 @@ func parseStacks(input []string) map[int][]string {
 	return final
 }
 
-func readFile(file string) (string, string) {
+func Task1(file string) string {
 	readFile, err := os.Open(file)
 	if err != nil {
 		fmt.Println(err)
@@ -105,12 +106,7 @@ func readFile(file string) (string, string) {
 	fileScanner.Split(bufio.ScanLines)
 	defer readFile.Close()
 
-	var totalFirst string
-	totalSecond := ""
-
-	// first task
-	// for each stack, create a key in the map
-
+	var final string
 	var stackStrings []string
 	var mapping map[int][]string
 
@@ -156,11 +152,82 @@ func readFile(file string) (string, string) {
 		}
 	}
 	// append the first item of each slice in map to string, in order
-	totalFirst = mapSlice0thItem(mapping)
+	final = mapSlice0thItem(mapping)
 
-	return totalFirst, totalSecond
+	return final
+}
+
+func Task2(file string) string {
+	readFile, err := os.Open(file)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	defer readFile.Close()
+
+	var final string
+
+	// first task
+	// for each stack, create a key in the map
+
+	var stackStrings []string
+	var mapping map[int][]string
+
+	var tempSlice []string
+	for fileScanner.Scan() {
+		prefix := strings.HasPrefix(fileScanner.Text(), " 1")
+		movePrefix := strings.HasPrefix(fileScanner.Text(), "move")
+
+		// get a list of the stack lines for parsing
+		if !prefix {
+			stackStrings = append(stackStrings, fileScanner.Text())
+
+		}
+		// get a parsed map
+		if prefix {
+			mapping = parseStacks(stackStrings)
+			for i := range mapping {
+				mapping[i] = deleteSpaces(mapping[i])
+			}
+		}
+		// if a line starts with move, process command
+		if movePrefix {
+			command := stripIntoCommand(fileScanner.Text())
+
+			var commandSlice []int
+			trimmed := strings.Split(strings.TrimSpace(command), " ")
+
+			for _, i := range trimmed {
+				Int, err := strconv.Atoi(i)
+				if err != nil {
+					// skip anything that can't be converted to int
+					continue
+				}
+				commandSlice = append(commandSlice, Int)
+			}
+
+			for i := 0; i < commandSlice[0]; i++ {
+				if len(mapping[commandSlice[1]]) == 0 {
+					break
+				}
+				tempSlice = append(tempSlice, mapping[commandSlice[1]][0])
+
+				mapping[commandSlice[1]] = removeIndex(mapping[commandSlice[1]], 0)
+			}
+			for i := len(tempSlice) - 1; i >= 0; i-- {
+				mapping[commandSlice[2]] = append([]string{tempSlice[i]}, mapping[commandSlice[2]]...)
+			}
+			tempSlice = []string{}
+		}
+	}
+	final = mapSlice0thItem(mapping)
+
+	return final
 }
 
 func main() {
-	fmt.Println(readFile("input.txt"))
+	fmt.Println(Task1("input.txt"))
+	fmt.Println(Task2("input.txt"))
 }
