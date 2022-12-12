@@ -30,10 +30,6 @@ func getCharsSlice(s string) (sl []string) {
 
 // check if the first is higher than the rest
 func canSee(check int, sl []int) bool {
-	if len(sl) == 0 {
-		return true
-	}
-
 	for _, i := range sl {
 		if i >= check {
 			return false
@@ -43,10 +39,6 @@ func canSee(check int, sl []int) bool {
 }
 
 func viewingDistance(check int, sl []int) (distance int) {
-	if len(sl) == 0 {
-		return 0
-	}
-
 	for _, i := range sl {
 		distance++
 		if i >= check {
